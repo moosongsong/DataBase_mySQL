@@ -637,3 +637,20 @@ ORDER BY rating_count DESC;
 cd C:\program
 
 >mysqladmin -umoosong -p -h192.168.30.20 create moosong
+
+
+SELECT COUNT(*) FROM comics;
+
+SELECT category_code, COUNT(*)
+FROM comics
+GROUP BY category_code;
+
+SELECT publisher_code, COUNT(*), MAX(price)
+FROM comics
+GROUP BY publisher_code;
+
+SELECT publisher_code, COUNT(*), MAX(price)
+FROM comics
+GROUP BY publisher_code
+HAVING COUNT(*)>=5
+LIMIT 2;

@@ -1,0 +1,191 @@
+(5)테이블 - 2020. 03 .31. 화
+
+======개념설명==================================================
+1. 스키마 
+ 객체의 특성을 나타내는 속성과 속성들의 집합으로 이루어진 개체, 
+개체와 개체 사이에 존재하는 관계에 대한 정의, 
+이들이 유지해야할 제약조건 기술한 것.
+<<한마디로 스키마는 명세이다. 개체와 개체들 개체와 개체가 가지는 속성, 
+컬럼 테이블 간의 관계들을 명세화 시키는게 스키마이다. >>
+
+2. 외부스키마 = 서브 스키마, 사용자 뷰
+ 테이블이 10개 라고 해서 다보여주는 것이 아니라
+권한을 가지고 있는 일부만 보여주는 것이다.
+개체와 개체간의 관계, (부모테이블과 자식테이블 간의 관계)
+같은 데이타베이스에서도 다른 관점들....
+일반 사용자는 질의어 이용해 사용 
+
+3. 개념스키마
+조직전체의 데이타베이스로 하나만 존재한다.
+기관이나 조직의 관점들(업무적인 관점에서 본 스키마). 보통의 스키마가 개념스키마이다.
+업무를 중심으로 스키마를 구성해야한다.
+관계나 제약조건을 나타내고, DB의 접근 권한, 보안, 무결성 규칙에 대한 명세.
+
+4. 내부스키마
+물리적인 구조를 정의 
+물리적 저장장치의 입장
+데이터 항목의 표현방법, 레코드의 물리적 순서.
+설계자 및 프로그래머가 보는 관점.
+
+5. 테이블 자체가 관계.
+하나의 테이블이 하나의 업무, 개체, 데이타의 집합소.라고 보면된다.
+column row는 논리적인 명칭
+record, field 는 물리적인 명칭
+각 column들의 집합이 행.
+모델링 관점에서는 테이블이 개체.
+테이블에는 관계있는 속성들이 있다. 즉 테이블자체가 관계.
+하나의 행의 하나의 속성 = 필드라고 한다.
+하나의 라인이 하나의 레코드....하지만 row column이라고 사용하자
+
+6. 속성의 수를 차수라고 하는데, 트리에서도 자식의 수를 차수라고 한다.
+즉 user라는 개체는 host, user, password등 다양한 자식들을 두고 있는 것이다.
+테이블이 부모, 테이블에 딸려있는 속성들이 자식.
+
+7. 튜플은 가지고올 대상에서 가지고 올때, 결과는 행렬이라고 부르면 된다.
+
+8. 전체행의 수를 가리켜서 카디널리티라고 한다.
+
+======실습1==================================================
+<테이블의 생성과 삭제, 삽입, 명세>
+-삭제
+DROP TABLE if EXISTS members;
+    >>테이블 내에 있는 데이터도 함께 삭제된다.
+
+-생성
+CREATE TABLE members(
+id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, - 행을 대표하는 대표 식별자, 자동으로 인덱스, 자동으로 유니크 걸린다.
+mname VARCHAR(20) NOT NULL,
+pass VARCHAR(20) NOT NULL, 
+email VARCHAR(50) NOT NULL UNIQUE,
+regdate DATETIME NOT NULL DEFAULT NOW()
+) ENGINE=INNODB DEFAULT CHARSET=UTF8;
+
+-테이블 생성
+CREATE TABLE grades(
+g_code CHAR(1) NOT NULL PRIMARY KEY,
+g_name VARCHAR(20) NOT NULL, 
+discount TINYINT NOT NULL DEFAULT 0
+) ENGINE=INNODB DEFAULT CHARSET=UTF8;
+
+-해당 테이블 명세 출력
+DESC members;
+Describe members;
+Explain members;
+
+-삽입
+INSERT INTO 
+members(id, mname, pass, email, regdate) 
+VALUES (DEFAULT, 'RM', '1234', 'rm@gmail.com', DEFAULT);
+
+-삽입
+INSERT INTO grades VALUES ('V', 'jin', 20);
+INSERT INTO grades VALUES ('G', 'Suga', 20);
+INSERT INTO grades VALUES ('S', 'RM', 20);
+
+-타 테이블의 요소로 테이블 만들기
+CREATE TABLE temp as SELECT mname, email FROM members;
+    >>제약사항은 안 따라오고 자료형과 이름만 따온다.
+
+-속성 출력하기
+SHOW COLUMNS FROM temp;
+SHOW COLUMNS FROM temp in database;
+SHOW COLUMNS in temp from database;
+
+-테이블 확인하기
+SHOW TABLES in database;
+
+======실습2==================================================
+<입력 리다이렉션, 출력 리다이렉션>
+1. 텍스트 파일을 이용해 sql 문 사용하기
+외부에서 텍스트 파일을 만들어 놓고 사용할 수 있다.
+mysql -u root -p mysql < CREATE_USER_EXAM.txt
+해당 텍스트 파일(CREATE_USER_EXAM.txt)에 다 적어놓으면 된다.
+
+2. 출력 리다이렉션을 이용해 결과문 텍스트 파일로 저장하기
+mysql -u root -p mysql < show.txt > result.txt
+출력 리다이렉션을 쓰면 해당 텍스트 파일(result.txt)로 저장이 된다.
+
+cf) 만약 텍스트 파일에 오류가 있다면 위의 구문부터 차근차근 실행시키면서 
+오류가 난 구문에서 정지하고 에러 메시지를 보여준다. 
+즉 정상처리 가능하다가 오류가 나는 것이다.
+출력 리다이렉션을 사용할 경우 정상처리 메시지만 파일로 가고, 
+에러 메시지만 프롬프트 상에 출력된다.
+
+3. 출력 리다이렉션 2>를 사용해 에러메시지 텍스트 파일로 저장하기
+mysql -u root -p mysql < show.txt > result.txt 2>error.txt
+을 사용하면 에러메시지는 콘솔로 출력되는 것이 아니라 error.txt 파일로 저장된다.
+
+cf)입력, 출력 리다이렉션
+stdin 0 :입력 
+stdout 1 : 출력
+stderr 2 : 에러
+
+4. 출력 파일 하나에 결과를 모두 다 저장하기
+mysql -u root -p mysql < show.txt > result.txt 2>&1
+에러출력을 파일 디스크립터 1로 지정을 한것이다. 
+(윈도우즈만 이렇게 써.... posix 계열은 걍 파일 명 다시 쓰면 된다.)
+즉 표준출력을 내보내는 곳으로 에러도 같이 내보내라 라는 뜻이다.
+파일 내에서 오류가 나는 즉시 바로 파일을 종료시켜 버린다.
+즉 앞에서 오류가 나면 뒤의 구문들을 실행이 되지 않는다.
+
+5. 질의어 설명 링크
+https://mariadb.com/kb/en/sql-statements/
+여기에 설명이 잘 나와 있으니 정독하도록 하자.
+https://mariadb.com/kb/en/data-definition/
+
+cf) 계정 접근.
+cd C:\program
+
+>mysqladmin -umoosong -p -h192.168.30.20 create moosong
+
+C:\program>mysqladmin --user=moosong -p --host=192.168.30.200 create moosong
+
+======실습3==================================================
+<테이블 편집>
+-테이블 생성
+CREATE TABLE customer(
+id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY Key
+) ENGINE=INNODB DEFAULT CHARSET=UTF8;
+
+-테이블 수정하기
+ALTER TABLE customer ADD c_name VARCHAR(50) NULL;
+ALTER TABLE customer ADD c_phone VARCHAR(50) NOT NULL;
+
+-명세 출력
+DESC customer;
+
+-삽입
+INSERT INTO customer(c_name, c_phone)
+VALUES ('jin', '921201');
+INSERT INTO customer(c_name, c_phone)
+VALUES ('suga', '930309');
+
+-속성 삭제하기
+ALTER TABLE customer DROP c_name;
+
+-속성 추가하기
+ALTER TABLE customer ADD c_name VARCHAR(30) NOT NULL;
+SELECT * FROM customer;
+    >>null을 지정하지 못하면 empty 상태로 추가된다.
+
+-삽입하는 속성의 위치 직접 지정하기.
+ALTER TABLE customer ADD c_name VARCHAR(30) NOT NULL 
+DEFAULT '입력요망' AFTER id;
+    >>가장 앞에 두고 싶다면 ATFER 를 First로 기재하면 된다.
+
+-속성 수정하기
+ALTER TABLE customer MODIFY c_phone VARCHAR(30) NULL;
+
+-속성 이름 바꾸기
+ALTER TABLE customer CHANGE c_phone c_tel VARCHAR(50) NOT NULL;
+
+-오류 예시
+ALTER TABLE customer MODIFY c_tel VARCHAR(5) NOT NULL;
+이렇게 수정 불가
+문자열이 길다면 자를 수가 없기 때문이다.
+자료형의 변환이 불가능한 자료형으로 변환 시도...ㄴㄴ
+
+-속성 삭제하기
+ALTER TABLE customer Drop c_name;
+
+>>끝 moosongsong

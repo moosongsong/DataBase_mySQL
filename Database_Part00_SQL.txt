@@ -1,0 +1,48 @@
+-테이블 생성
+CREATE TABLE tableName [IF NOT EXISTS] (
+.....) [table_options];
+
+-테이블 명세
+EXPLAIN tableName;
+DESCRIBE tableName; 
+DESC tableName;
+
+-생성한 테이블 확인
+SHOW TABLES [IN databaseName]; 
+
+-생성한 테이블의 속성들 확인하기
+SHOW COLUMNS IN tableName [IN databaseName]; 
+
+-검색된 결과를 이용해 테이블 만들기
+CREATE TABLE tableName AS SELECT 구문;
+
+-테이블을 생성하기 위한 확인
+SHOW CREATE TABLE tableName; 
+
+-입력 리다이렉션
+mysql -uroot -p test < create_board.sql
+
+-출력 리다이렉션
+mysql -uroot -p test < create_board.sql > result.txt
+
+-칼럼 추가하기
+ALTER TABLE tableName 
+ADD col_name col_definition
+[FIRST | AFTER col_name];
+
+-칼럼 편집하기
+ALTER TABLE tableName 
+MODIFY col_name col_definition
+[FIRST | AFTER col_name];
+
+-칼럼 이름 바꾸기
+ALTER TABLE tableName 
+Change old_col_name new_col_name col_definition
+[FIRST | AFTER col_name];
+
+-칼럼 삭제
+ALTER TABLE tableName
+DROP col_name;
+
+-테이블 삭제
+DROP TABLE tableName;

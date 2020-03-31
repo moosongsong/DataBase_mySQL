@@ -1,0 +1,197 @@
+(7)자료의 검색 - 2020.03.31.화
+
+==============SELECT==========================
+SELECT
+    [ALL | DISTINCT(중복제거) | DISTINCTROW]
+    [HIGH_PRIORITY]
+    [STRAIGHT_JOIN]
+    [SQL_SMALL_RESULT] [SQL_BIG_RESULT] [SQL_BUFFER_RESULT]
+    [SQL_CACHE | SQL_NO_CACHE] [SQL_CALC_FOUND_ROWS]
+    select_expr [, select_expr ...]
+    [ FROM table_references(써도 되고 맘대루)
+      [WHERE where_condition]
+      [GROUP BY {col_name | expr | position} [ASC | DESC], ... [WITH ROLLUP]]
+      [HAVING where_condition]
+      [ORDER BY {col_name | expr | position} [ASC | DESC], ...]
+      [LIMIT {[offset,] row_count | row_count OFFSET offset}]
+      procedure|[PROCEDURE procedure_name(argument_list)]
+      [INTO OUTFILE 'file_name' [CHARACTER SET charset_name] [export_options]
+
+
+INTO DUMPFILE 'file_name'	INTO var_name [, var_name] ]
+
+      [[FOR UPDATE | LOCK IN SHARE MODE] [WAIT n | NOWAIT] ] ]
+
+
+export_options:
+    [{FIELDS | COLUMNS}
+        [TERMINATED BY 'string']
+        [[OPTIONALLY] ENCLOSED BY 'char']
+        [ESCAPED BY 'char']
+    ]
+    [LINES
+        [STARTING BY 'string']
+        [TERMINATED BY 'string']
+    ]
+
+--------------------------------------------------------
+SELECT * FROM category;
+SELECT NOW();
+SELECT CEIL(3.1);
+SELECT CEIL(3.1) FROM category;
+
+SELECT CEIL(3.1) result FROM book;
+SELECT CEIL(3.1) 'result value' FROM book;
+>>결과를 출력하되 헤더를 result로 지정해라.
+
+SELECT id, title, price FROM book;
+->SELECT book.id, book.title, book.price FROM book;
+->SELECT book.id, book.title, book.price FROM moosong.book;
+
+->SELECT id '일련번호', title'책제목', price'가격' FROM book;
+헤더를 바꾸어 출력하기
+
+SELECT 뒤에 오는 것은 바로 수식이다.
+따라서 뒤에 함수가 올수도, col 이 올수도 있는 것이다.
+
+헤더를 알리아스??라고 한다.
+
+SELECT id, title, price FROM book AS a;
+이렇게 데이타베이스에도 닉네임을 붙여줄 수 있다.
+-------------------------------------
+<실습2>
+DESC category;
+DESC comics;
+EXPLAIN comics_to_tags;
+DESCRIBE members;
+DESCRIBE publisher;
+DESCRIBE ratings;
+DESCRIBE tags;
+
+SELECT category_code AS '분류코드', category_name AS '분류명'FROM category c;
+
+SELECT category_code AS '분류코드', category_name AS '분류명'
+FROM category c
+WHERE category_code = 'ACTI';
+
+SELECT category_name AS '분류명'
+FROM category c
+WHERE category_code = 'ACTI';
+
+SELECT category_code AS '분류코드', category_name AS '분류명'
+FROM category c
+WHERE c.category_code = 'ACTI';
+
+SELECT 
+category_code AS '분류코드', 
+category_name AS '분류명'
+FROM category AS C
+WHERE c.category_code = 'A%';>>오류발생
+와일드 카드 쓸 수 없음.
+
+SELECT 
+category_code AS '분류코드', 
+category_name AS '분류명'
+FROM category AS C
+WHERE c.category_code Like 'A%';
+>>이렇게 바꾸어 써야 해결 가능.
+
+SELECT 
+category_code AS '분류코드', 
+category_name AS '분류명'
+FROM category AS C
+WHERE c.category_code Not Like 'A%';
+>>A로 시작하지 않는것.
+
+SELECT 
+category_code AS '분류코드', 
+category_name AS '분류명'
+FROM category AS C
+WHERE c.category_code Not Like 'A___';
+>>4문자이면서 A로 시작하지 않는것
+
+SELECT 
+	category_code AS '분류코드', 
+	category_name AS '분류명'
+FROM 
+	category AS C
+WHERE 
+	c.category_code Not Like 'A___'
+ORDER BY
+	category_code DeSC;
+>>내림차순 정렬
+
+SELECT 
+	category_code AS '분류코드', 
+	category_name AS '분류명'
+FROM 
+	category AS C
+WHERE 
+	c.category_code Not Like 'A___'
+ORDER BY
+	category_code ASC;
+>>오름차순 정렬
+
+SELECT 
+	category_code AS '분류코드', 
+	category_name AS '분류명'
+FROM 
+	category AS C
+WHERE 
+	c.category_code Not Like 'A___'
+ORDER BY
+	category_code ASC
+LIMIT 3;
+>>상위 세개만 출력하라
+
+SELECT 
+	category_code AS '분류코드', 
+	category_name AS '분류명'
+FROM 
+	category AS C
+WHERE 
+	c.category_code Not Like 'A___'
+ORDER BY
+	category_code ASC
+LIMIT 0, 3;
+>>0번째부터 세개만 출력
+
+=================================
+SELECT 
+	id '일련번호', 
+	comics_id '서적번호', 
+	rating_count '판매수량', 
+	rating_date '판매일자',
+	rating_price '판매가격' ,
+	rating_count*rating_price '총판매액'
+FROM ratings
+WHERE rating_count >= 10
+ORDER BY rating_count DESC;
+
+SELECT 
+	id '일련번호', 
+	comics_id '서적번호', 
+	rating_count '판매수량', 
+	rating_date '판매일자',
+	rating_price '판매가격' ,
+	rating_count*rating_price '총판매액'
+FROM ratings
+WHERE rating_count >= 10 || rating_price >=17000
+ORDER BY rating_count DESC;
+=====================================
+
+SELECT COUNT(*) FROM comics;
+
+SELECT category_code, COUNT(*)
+FROM comics
+GROUP BY category_code;
+
+SELECT publisher_code, COUNT(*), MAX(price)
+FROM comics
+GROUP BY publisher_code;
+
+SELECT publisher_code, COUNT(*), MAX(price)
+FROM comics
+GROUP BY publisher_code
+HAVING COUNT(*)>=5
+LIMIT 2;

@@ -1,0 +1,115 @@
+(7)-JOIN 2020. 04. 01. 수
+
+=======실습1=================================================
+=========================full join=========================
+SELECT * FROM category;
+SELECT * FROM comics;
+SELECT * FROM comics, category;
+
+=========================theta join=========================
+SELECT * FROM comics, category
+WHERE comics.category_code = category.category_code;
+
+SELECT * FROM comics, category
+WHERE category.category_code=comics.category_code;
+
+SELECT *FROM comics, ratings
+WHERE comics.id = ratings.comics_id;
+>>id 가 중복
+
+SELECT c.id, c.title, r.rating_count,
+(r.rating_count * r.rating_price) '총판매가격'
+from  ratings r,comics c
+WHERE c.id = r.comics_id;
+//현재 판매가를 기준으로 해야하기 때문에 rating_count와 rating_price를 이용해서
+총값을 구해야 한다.
+
+SELECT c.id, c.title, r.rating_count,
+(r.rating_count * r.rating_price) 'total'
+from  ratings r,comics c
+WHERE c.id = r.comics_id && (r.rating_count * r.rating_price)>=10;
+where절에서는 별칭을 연산자로 쓸수 없다.
+
+=========================inner join=========================
+SELECT *
+from  comics INNER JOIN category
+USING(category_code);
+
+SELECT *
+from  comics INNER JOIN ratings
+ON (comics.id=ratings.comics_id);
+
+SELECT *
+from  comics INNER JOIN ratings
+ON (comics.id=ratings.comics_id)
+WHERE ratings.rating_count >=5;
+>>조건 추가하기
+
+>>inner join
+SELECT 
+	c.id, 
+	c.title, 
+	c.price, 
+	ca.category_name, 
+	r.rating_count, 
+	r.rating_price, 
+	r.rating_date
+FROM comics c 
+INNER JOIN category ca
+ON(c.category_code = ca.category_code)
+INNER JOIN ratings r
+ON(c.id = r.comics_id);
+
+>>theta join
+SELECT 
+	c.id, 
+	c.title, 
+	c.price, 
+	ca.category_name, 
+	r.rating_count, 
+	r.rating_price, 
+	r.rating_date
+FROM comics c ,category ca, ratings r
+WHERE c.category_code = ca.category_code && c.id = r.comics_id;
+
+>>조건 추가하기 (inner join)
+SELECT 
+	c.id, 
+	c.title, 
+	c.price, 
+	ca.category_name, 
+	r.rating_count, 
+	r.rating_price, 
+	r.rating_date
+FROM comics c 
+INNER JOIN category ca
+ON(c.category_code = ca.category_code)
+INNER JOIN ratings r
+ON(c.id = r.comics_id)
+WHERE r.rating_count >=10
+ORDER BY r.rating_count DESC;
+
+=========================Natural join=========================
+SELECT * 
+FROM comics a NATURAL JOIN category b;
+>>동일한 이름의 속성이 있어야 가능하다. , 또한 주키 보조키의 관계에서 최대한 엮어주어야 한다.
+이 관계가 아닌 상태에서 엮게 된다면, 올바르지 않은 조인이 되기 때문이다.
+
+=========================Left Outer join=========================
+SELECT * 
+FROM comics a LEFT OUTER JOIN category b
+USING(category_code);
+>>왼쪽이 기준, 좌측의 내용이 다 출력된다.
+
+=========================Right Outer join=========================
+>>우측이 기준, 우측의 내용이 다 출력된다.
+INSERT INTO category VALUES ('WARS', '전쟁');
+SELECT * 
+FROM comics a Right OUTER JOIN category b
+USING(category_code);
+
+======총 복습 실습====================================================
+SELECT ca.category_name, c.title
+FROM comics c RIGHT OUTER JOIN category ca
+USING (category_code);
+

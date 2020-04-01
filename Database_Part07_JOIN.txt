@@ -113,3 +113,12 @@ SELECT ca.category_name, c.title
 FROM comics c RIGHT OUTER JOIN category ca
 USING (category_code);
 
+SELECT ca.category_name, c.title, r.rating_date, r.rating_count, r.rating_price
+FROM 
+category ca
+Left OUTER JOIN 
+comics c 
+USING (category_code)
+left OUTER JOIN
+ratings r
+ON(c.id = r.comics_id);

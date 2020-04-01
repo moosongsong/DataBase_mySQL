@@ -67,15 +67,8 @@ from comics left outer join
 		ratings.rating_count as count,
 		ratings.rating_price as price,
 		(ratings.rating_count*ratings.rating_price) as total
-	from ratings) temp1
+	from ratings group by ratings.comics_id) temp1
 on( comics.id = temp1.id)
 group by comics.category_code;
-
-
-
-
-
-
-
 
 

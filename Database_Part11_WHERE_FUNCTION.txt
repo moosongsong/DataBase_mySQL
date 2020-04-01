@@ -1,0 +1,81 @@
+(11)-where 에서 함수 사용하기 2020. 04. 01. 수
+
+select * from comics
+where left(category_code, 2) ='FA';
+
+-서브 쿼리1
+select * from comics
+where price = (
+select max(price)
+from comics);
+
+-3중 쿼리
+select * from comics
+where price = (select max(price) from comics
+where price < (select max(price) from comics));
+
+select * from comics
+where price >= (select avg(price) from comics);
+
+select id, title, price, 
+(select category_name from category
+where category.category_code=comics.category_code) as category_name
+from comics;
+
+select * 
+from (select * from comics)a;
+from절에는 aliasing을 꼭 해주어야 한다.
+
+select category.category_name, a.cnt
+from category inner join 
+(select category_code, count(*) as cnt from comics group by category_code)a 
+using(category_code);
+
+
+===========문제1==================================
+-서적명, 판매부수, 판매단가, 총판매액 출력하기
+
+select comics.title '서적명', 
+	ifnull(temp.tc, 0)'판매부수', 
+    floor(ifnull(temp.ap,0))'판매단가', 
+    ifnull(temp.tp,0)'총판매액'
+from comics left outer join (select 
+	comics_id, 
+	sum(rating_count) as tc,
+    avg(rating_price) as ap,
+    sum(rating_price*rating_count) as tp
+from ratings group by comics_id) as temp
+on (temp.comics_id = comics.id);
+
+
+===========문제2==================================
+분류별 매출랙
+분류명 총판매부수 판매단가 총판매액
+
+1. 서적별 판매부수, 판매단가, 총판매액을 구한다.
+2. 서적 테이블과 1을 조인하여 분류별 판매부수, 판매단가, 총판매액
+3. 분류테이블과 2를 조인하여 출력.
+
+
+select 
+	comics.category_code '분류', 
+    SUM(temp1.count) as '총판매부수', 
+    floor(avg(temp1.price)) as '판매단가', 
+    SUM(temp1.total) as '총판매액'
+from comics left outer join
+	(select comics_id as id,
+		ratings.rating_count as count,
+		ratings.rating_price as price,
+		(ratings.rating_count*ratings.rating_price) as total
+	from ratings) temp1
+on( comics.id = temp1.id)
+group by comics.category_code;
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,59 @@
+(9)-연산자 2020. 04. 01. 수
+
+===========추가===================================
+자식에게 참조키로써 전이한 부모의 주키가 자식의 주키로 사용되면 식별관계
+주키로 사용되지 않으면 비식별 관계이다.
+선은 관계를 표현한다.
+수직으로 그어진 짝대기
+-필요없어도 되는 아이
+외래키가 자식 테이블에서 홀로 주키가 된다면 1:1 관계이다.
+================================================
+
+-join 하기
+select 
+a.category_name, b.title, 
+ifnull(c.rating_date, '') as rating_date,
+ifnull(c.rating_count, 0) as rating_count,
+ifnull(c.rating_price, 0) as rating_price,
+ifnull(c.rating_count,0) * ifnull(c.rating_price, 0) as total
+from category a natural join comics b
+left join ratings c on (b.id=c.comics_id);
+
+select * from comics
+where price not between 15000 And 17000;
+
+select * from comics
+where category_code like 'F%';
+
+select * from comics
+where price between 13000 and 17000;
+
+select * from comics
+where price >= 13000 && price <=17000;
+
+select * from comics
+where price <=13000
+|| price >=17000;
+
+
+>>필터링하기
+select 
+a.category_name, b.title, 
+rating_date,
+rating_count,
+rating_price,
+c.rating_count * c.rating_price as total
+from category a natural join comics b
+left join ratings c on (b.id=c.comics_id)
+where rating_count is not null AND rating_price is not null;
+
+-group
+select category_code, count(*)
+from comics
+group by category_code;
+
+select category_code, publisher_code, count(*)
+from comics
+group by category_code, publisher_code;
+
+

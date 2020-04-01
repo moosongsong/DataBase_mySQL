@@ -1,0 +1,45 @@
+(10)-함수 2020. 04. 01. 수
+
+=======실습1========================================================
+page 119
+<날짜와 시간 관련 함수 사용해보기>
+SELECT YEAR(NOW());
+SELECT QUARTER(NOW());
+SELECT MONTH(NOW());	
+SELECT day(NOW());	
+SELECT DATE_ADD(NOW(), INTERVAL 100 DAY);
+SELECT DATE_ADD(NOW(), INTERVAL -100 Day);
+
+<문자열과 관련된 함수 사용해보기>
+SELECT LPAD ('ire',10, '#');//ire#######
+SELECT LENGTH('ghdrlf'); //6
+SELECT if(LENGTH('ghdrlf')=3, 1,0); //0
+	cf) =는 비교이다.
+
+<그룹함수 사용해보기>
+SELECT COUNT(*) ,category_code
+FROM comics
+GROUP BY category_code;
+
+SELECT FLOOR( AVG(price))
+FROM comics;
+
+SELECT 
+	category_code, 
+	AVG(price),
+	MAX(price),
+	MIN(price),
+	COUNT(*)
+FROM comics
+GROUP BY category_code;
+
+-그룹에 대한 조건 추가
+SELECT 
+	category_code, 
+	AVG(price),
+	MAX(price),
+	MIN(price),
+	COUNT(*)
+FROM comics
+GROUP BY category_code
+HAVING AVG(price) >=16000;

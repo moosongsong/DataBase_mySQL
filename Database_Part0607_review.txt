@@ -1,0 +1,95 @@
+(6-1)-테이블 복습 2020. 04. 01. 수
+
+=======복습1========================================================
+DROP TABLE if EXISTS board;
+CREATE TABLE board(
+num INT UNSIGNED not Null, 
+renum INT UNSIGNED NOT NULL DEFAULT 0,
+regdate DATETIME NOT NULL DEFAULT NOW(), 
+writer VARCHAR(50) NOT NULL, 
+title VARCHAR(200) NOT NULL, 
+contents MEDIUMTEXT NOT NULL)
+ENGINE = INNODB DEFAULT CHARSET=UTF8; 
+
+ALTER TABLE board ADD pass VARCHAR(20) NOT NULL AFTER writer;
+
+ALTER TABLE board ADD PRIMARY KEY(num, renum );
+
+ALTER TABLE board CHANGE renum rnum INT UNSIGNED NOT NULL DEFAULT 0;
+
+CREATE TABLE parts(
+p_code CHAR(2) NOT NULL PRIMARY KEY, 
+p_name VARCHAR(100) NOT NULL)
+ENGINE=INNODB DEFAULT CHARSET=UTF8;
+
+ALTER TABLE board ADD PRIMARY KEY(num, renum );
+
+ALTER TABLE board ADD p_code CHAR(2) NOT NULL AFTER rnum;
+
+ALTER TABLE board ADD FOREIGN KEY(p_code) REFERENCES parts(p_code);
+
+ALTER TABLE board Drop PRIMARY KEY;
+ALTER TABLE board ADD PRIMARY KEY(num, rnum, p_code);
+    >>복합키 만들기
+	
+INSERT INTO parts VALUES ('PR', 'progamming');
+INSERT INTO parts VALUES ('WB', 'WEB');
+
+
+ALTER TABLE board DROP regdate;
+ALTER TABLE board DROP writer;
+ALTER TABLE board DROP pass;
+ALTER TABLE board DROP title;
+ALTER TABLE board DROP contents;
+
+INSERT INTO board VALUES (1,0,'PR');
+INSERT INTO board VALUES (1,0,'WB');
+INSERT INTO board VALUES (2,0,'WB');
+INSERT INTO board VALUES (1,1,'WB');
+INSERT INTO board VALUES (2,0,'PR');
+INSERT INTO board VALUES (2,1,'PR');
+INSERT INTO board VALUES (2,2,'PR');
+
+SELECT * FROM board;
+
+SELECT * FROM board
+WHERE p_code = 'PR'
+ORDER BY num DESC, rnum ASC;
+
+SELECT * FROM board
+WHERE p_code LIKE 'PR' || p_code LIKE 'WB'
+ORDER BY num DESC, rnum ASC;
+
+SELECT * FROM board
+WHERE p_code IN('PR','WB')
+ORDER BY num DESC, rnum ASC;
+
+-주글이거나 답글 하나만
+SELECT * FROM board
+WHERE p_code = 'PR'
+&& rnum IN(0, 1)
+ORDER BY num DESC, rnum ASC;
+
+cf) 
+테이블은 관계이다. 파트테이블은 분류와 관련된 관계만 있다.
+존재의 유형
+행위의 유형
+누가 부모를 할지 정하는 게 이 두가지 기준
+게시글은 분류에 포함된다.
+분류는 게시글을 가질수 있다.
+게시글 입장에서는 분류에 들어가는거
+분류입장에서는 게시글을 포함시키는 것
+
+오직 하나만 존재해야하는 쪽이 부모
+여러개의 게시글이 분류에 속할수 있으나
+여러개의 분류가 게시글에 들어갈 수 는 없다.
+
+관계는 부모테이블의 주키를 자식테이블에 전이를 시켜서 만든다.
+
+외래키로 전이 시킬 때에도 모든 주키를 다보내야 한다.
+즉 복합키면 두개 세개 든 다보내야 한다는 것이다.
+그러면 id를 추가해서 primary 키로 만드는 것으로 해결할 수있다.
+
+또는 여려개의 속성을 묶어서 유니크로 지정하여 해결할 수도 있으나
+데이타베이스적으로 해결은 불가능하며, 소프트웨어적으로 해결해야 한다.
+

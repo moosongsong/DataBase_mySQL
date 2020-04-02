@@ -208,20 +208,8 @@ FROM book_category;
 일련의 연속된 작업처리를 제어할 수 있는 기능
 
 
+-주키 업데이트 할때 숫자 중복이 발생하기 때문에, 거꾸로 출력해야한다.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+UPDATE saleslog SET id = id+1
+ORDER BY id DESC;
 

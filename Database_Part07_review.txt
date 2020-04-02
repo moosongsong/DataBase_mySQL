@@ -143,6 +143,79 @@ FROM category ,
 	GROUP BY co.category_code) temp
 WHERE category.category_code = temp.ccode;
 
+SELECT comics_id, 
+		SUM(rating_count * rating_price),
+		floor(AVG(rating_price))
+FROM ratings
+GROUP BY comics_id
+WITH rollup;
+
+SELECT comics_id, 
+		SUM(rating_count * rating_price),
+		floor(AVG(rating_price))
+FROM ratings
+WHERE comics_id <=10
+GROUP BY comics_id
+WITH rollup;
+
+
+======================================================
+CREATE TABLE book_category (
+bc_code VARCHAR(20) NOT NULL, 
+bc_name VARCHAR(200) NOT NULL, 
+bc_upcode VARCHAR(20) NOT NULL DEFAULT '00')
+ENGINE=INNODB DEFAULT CHARSET=UTF8;
+
+INSERT INTO book_category VALUES ('PROGRAMMING', '프로그래밍', DEFAULT);
+INSERT INTO book_category VALUES ('REFFERENCE', '참고서', DEFAULT);
+INSERT INTO book_category VALUES ('NOVEL', '소설', DEFAULT);
+INSERT INTO book_category VALUES ('JAVA', '자바', 'PROGRAMMING');
+INSERT INTO book_category VALUES ('WEB', '웹기술', 'PROGRAMMING');
+INSERT INTO book_category VALUES ('MYSQL', 'MySql', 'PROGRAMMING');
+INSERT INTO book_category VALUES ('JAVA BASIC', '자바 기초', 'JAVA');
+
+
+
+SELECT DISTINCT temp1.bc_code, temp1.bc_name, temp2.bc_code, temp2.bc_name
+FROM book_category temp1
+, book_category temp2
+WHERE temp1.bc_upcode = temp2.bc_code;
+
+SELECT temp1.bc_code AS '분류코드', 
+		temp1.bc_name AS '분류명', 
+		temp2.bc_code AS '상위코드', 
+		temp2.bc_name as '상위분류명'
+FROM book_category temp1
+LEFT join book_category temp2
+ON( temp1.bc_upcode = temp2.bc_code);
+
+
+CREATE table temp(
+t_code VARCHAR(20) NOT NULL, 
+t_name VARCHAR(200) NOT NULL )
+ENGINE=INNODB DEFAULT CHARSET=UTF8;
+
+INSERT INTO temp
+SELECT bc_code, bc_name
+FROM book_category;
+
+
+
+
+
+
+=트랜잭션
+일련의 연속된 작업처리를 제어할 수 있는 기능
+
+
+
+
+
+
+
+
+
+
 
 
 

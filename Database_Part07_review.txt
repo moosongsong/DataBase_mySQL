@@ -1,0 +1,154 @@
+(7) 조인 복습 2020.04.02.목
+
+==복습===
+-Theta Join----------------------------------------
+SELECT * FROM category;
+SELECT *FROM comics;
+SELECT * FROM publisher;
+SELECT * FROM category ca, comics co, publisher pu
+WHERE ca.category_code = co.category_code
+AND co.publisher_code = pu.publisher_code
+AND ca.category_code LIKE 'fant';
+
+예약어를 속성명으로 지정했을 경우
+``로 감싸서 사용하면 된다.
+각자 편한 것 사용하면 된다.
+
+-Natural Join----------------------------------------
+SELECT * FROM category;
+SELECT *FROM comics;
+SELECT * FROM publisher;
+SELECT * FROM comics NATURAL JOIN category
+NATURAL JOIN publisher;
+ >>이름만 같을뿐 관련이 없는 다른 값일 수도 있다.
+ 따라서 이점에 대해 유의 하면서 inner join을 사용하는 방법이 있다.
+ 
+-Inner Join----------------------------------------
+SELECT * FROM category;
+SELECT *FROM comics;
+SELECT * FROM publisher;
+SELECT * FROM comics 
+JOIN category USING (category_code)
+JOIN ratings ON(comics.id = ratings.comics_id);
+ >>inner를 기재하지 않아도 기본값이 inner join이기 때문에 비기재해도 괜찮다.
+ 
+-Outer Join----------------------------------------
+SELECT * FROM category;
+SELECT *FROM comics;
+SELECT * FROM publisher;
+SELECT * FROM comics 
+right JOIN category USING (category_code);
+
+SELECT * FROM comics 
+right JOIN category USING (category_code)
+LEFT JOIN publisher USING (publisher_code);
+
+ >>앞의 조인부터 차례대로 조인이 실행된다.
+
+-group function---------------------------------------
+SELECT 
+	CURRENT_TIMESTAMP(), 
+	LEFT(category_code, 1),
+	category_code, 
+	category_name
+FROM category;
+
+SELECT 
+	COUNT(*) AS '수', 
+	MIN(price) AS '최소',
+	MAX(price) AS '최대',
+	AVG(price) AS '평균',
+	SUM(price) AS '합'
+FROM comics
+GROUP BY category_code;
+
+SELECT 
+	co.category_code, ca.category_name,
+	COUNT(*) AS '수', 
+	MIN(price) AS '최소',
+	MAX(price) AS '최대',
+	AVG(price) AS '평균',
+	SUM(price) AS '합'
+FROM comics co JOIN category ca USING(category_code)
+GROUP BY category_code;
+
+-----------------------------------------------------------
+>>from절에는 함수가 나타날수 없다.
+그러나 where절에는 함수가 나타날수 있다.
+
+예시)
+SELECT * FROM comics
+WHERE LEFT(category_code,2) = 'FA';	
+
+
+>>그러나 where절에는 그룹함수로 비교가 불가능하다.
+->그룹함수 사용 불가!!!!!
+->따라서 where절에서 그룹함수를 쓰고 싶다면
+->서브쿼리 문으로 작성해야 한다.
+
+SELECT* FROM comics
+WHERE price = (SELECT MAX(price) FROM comics);	
+
+
+
+SELECT* 
+FROM comics
+WHERE category_code in (SELECT distinct category_code 
+					FROM comics 
+					WHERE price > 17000);
+
+SELECT 
+	(SELECT category_name FROM category 
+	WHERE category_code = comics.category_code) AS ca_name,
+	category_code, 
+	title
+FROM comics;
+>>select 절에서는 절대 서브쿼리 사용하지 말자
+>>튜플당 계산을 계속하게 되기 때문에 성능이 떨어진다.
+
+
+SELECT * 
+FROM comics 
+LEFT JOIN 
+	(SELECT 
+	comics_id as id,
+	SUM(rating_price*rating_price) AS total
+	FROM ratings
+	GROUP BY comics_id) AS sub1
+USING(id); 
+
+
+SELECT co.category_code, 
+		COUNT(*) AS totalCount,
+		SUM(rating_count) AS totalCount,
+		SUM(ra.rating_price*ra.rating_count) AS totalPrice
+FROM comics co 
+LEFT JOIN ratings ra 
+ON (co.id = ra.comics_id)
+GROUP BY co.category_code;
+
+
+SELECT category.category_name,
+	temp.ccount,
+	temp.totalCount, 
+	temp.totalPrice
+FROM category , 
+	(SELECT co.category_code AS ccode, 
+			COUNT(*) AS ccount,
+			SUM(rating_count) AS totalCount,
+			SUM(ra.rating_price*ra.rating_count) AS totalPrice
+	FROM comics co 
+	LEFT JOIN ratings ra 
+	ON (co.id = ra.comics_id)
+	GROUP BY co.category_code) temp
+WHERE category.category_code = temp.ccode;
+
+
+
+
+
+
+
+
+
+

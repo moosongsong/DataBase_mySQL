@@ -224,3 +224,66 @@ delimiter ;
 CALL mpro('name', 'products', 1);
 
 
+------------------------------------------------------------------------
+저장 프로시저
+여러 sql문을 하나이 sql문을 하나의 sql 문처럼 정리하여 call 명령을 이용하여 호출. 저장 프로시져는 저장과 절차가 결함되었음.
+사전에 준비해둔 많은 명령을 자동으로 실행할 수 있으므로 작어브이 효율성을 높일 수 있다.
+그러나 검증되지 않은 저장프로시져를 중요한 데이터가 축적된 데이터 베이스에서 실행하는 것은 위험.
+프로시저는 반드시 call 에의한 호출에 의해 독립적으로 실행되어야 한다.
+select 와 update구문에서의 참조가 불가능.
+
+
+
+--프로시저 사용하는 방법, 커서 사용하는 방법-
+delimiter $$
+CREATE OR REPLACE PROCEDURE myCursor()
+BEGIN
+	DECLARE pname VARCHAR(200) DEFAULT NULL;
+	DECLARE pprice INT UNSIGNED DEFAULT 0;
+	DECLARE EOD INT DEFAULT FALSE;
+	DECLARE mcur cursor FOR SELECT `name`, price FROM products;
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET EOD = true;
+
+	SET @q := 'update products set price = ? where name = ?';
+	PREPARE stmt FROM @q;
+	SET @new_price := 0;
+	SET @product_name := '';
+
+	OPEN mcur;
+	test_loop : loop
+		fetch mcur INTO pname, pprice;
+		if (EOD = TRUE)
+			then leave test_loop;
+		END if;
+
+		case
+			when pprice <1000 then set @new_price := pprice +50;
+			when pprice <2000 then SET @new_price := pprice +100;
+			when pprice <3000 then SET @new_price := pprice +200;
+			ELSE SET @new_price := pprice +500;
+		END case;
+
+		SET @product_name := pname;
+		EXECUTE stmt USING @new_price, @product_name;
+		SELECT @new_price, @product_name;
+	END loop;
+	close mcur;
+END $$
+delimiter ;
+CALL myCursor();
+
+
+--백업 복원
+untie > auntie.table.sql
+Enter password: ******
+
+C:\Users\송무송>mysqldump -uauntie -p --no-create-info auntie > auntie.data.sql
+Enter password: ******
+
+C:\Users\송무송>mysqldump -uauntie -p --add-drop-table auntie > auntie.sql
+Enter password: ******
+
+C:\Users\송무송>mysql -uauntie -p auntie < auntie.table.sql
+Enter password: ******
+
+C:\Users\송무송>mysql -uauntie -p auntie < auntie.data.sql

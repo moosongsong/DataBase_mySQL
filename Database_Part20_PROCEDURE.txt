@@ -1,0 +1,226 @@
+2020.04.06.월
+
+/*제품명 분류명 가격*/
+
+CREATE OR REPLACE VIEW v_product AS 
+(SELECT pa.name '분류명', pr.name'제품명', pr.price '판매가격'FROM
+parts pa INNER JOIN products pr
+WHERE pa.id = pr.part_id);
+
+
+SELECT * FROM v_product;
+
+
+SELECT orderlists.product_id, SUM(orderlists.product_price) FROM
+orderlists
+GROUP BY orderlists.product_id;
+
+
+SELECT od.ordered_date, pr.name, SUM(ol.product_price) AS total
+FROM orderlists ol INNER JOIN orders od
+ON( od.id =ol.order_id) 
+INNER JOIN products pr ON (ol.product_id = pr.id)
+GROUP BY od.ordered_date, pr.name;
+
+
+
+SELECT * FROM v_total;
+
+SELECT ORdered_date, SUM(total) FROM v_total
+GROUP BY ordered_date;
+
+SELECT name, SUM(total) FROM v_total
+GROUP BY name;
+
+
+
+------------------------------
+delimiter $$
+create PROCEDURE test()
+BEGIN
+	SELECT * FROM products;
+END$$
+delimiter ;
+CALL test;
+
+
+
+
+DROP PROCEDURE if EXISTS test;
+delimiter $$
+create PROCEDURE test(IN cnt integer)
+BEGIN
+	SELECT * FROM products LIMIT 0,cnt ;
+END$$
+delimiter ;
+CALL test(10);
+
+
+
+DROP PROCEDURE if EXISTS test;
+delimiter $$
+create PROCEDURE test()
+BEGIN
+	DECLARE max_price INTEGER DEFAULT 100;
+	SET @min_price :=50;
+END$$
+delimiter ;
+
+CALL test();
+SELECT @min_price;
+
+
+
+
+DROP PROCEDURE if EXISTS test;
+delimiter $$
+create PROCEDURE test()
+BEGIN
+	DECLARE max_price INTEGER DEFAULT 100;
+	SELECT MAX(price) INTO max_price FROM products;
+	SELECT max_price;
+END$$
+delimiter ;
+
+CALL test();
+SELECT @min_price;
+
+
+
+
+
+delimiter $$
+CREATE OR REPLACE FUNCTION test() RETURNS INTEGER
+BEGIN
+	DECLARE max_price INTEGER DEFAULT 100;
+	SELECT MAX(price) INTO max_price FROM products;
+	RETURN max_price;
+END$$
+delimiter ;
+
+SET @r := test();
+SELECT @r;
+
+
+
+
+
+
+delimiter $$
+CREATE OR REPLACE PROCEDURE test(col1 VARCHAR(50), col2 VARCHAR(50))
+BEGIN 
+	SET @q := CONCAT ('select ', col1, ',', col2,' from products');
+	PREPARE stmt FROM @q;
+	EXECUTE stmt; 
+END$$
+delimiter ;
+
+CALL test('name', 'price');
+
+
+
+
+delimiter $$
+CREATE OR REPLACE PROCEDURE test(
+	col1 VARCHAR(50), col2 VARCHAR(50), word VARCHAR(50))
+BEGIN 
+	SET @q := CONCAT 
+	('select ', col1, ',', col2,
+	' from products where name like ?');
+	PREPARE stmt FROM @q;
+	SET @w := word;
+	EXECUTE stmt USING @w;
+END$$
+delimiter ;
+
+CALL test('name', 'price', '크림치즈 스틱');
+
+
+
+===========반복문 시용하기===================================
+
+delimiter $$
+CREATE OR REPLACE PROCEDURE mCount
+(IN bound INTEGER, OUT result INTEGER)
+BEGIN 
+	DECLARE cnt INTEGER DEFAULT 0;
+	SET result =0;
+	test_loop : loop
+		SET cnt = cnt +1;
+		SET result = result + cnt;
+		if(cnt>=bound) then 
+			leave test_loop;
+		END if;
+	END loop;
+END $$
+delimiter ;
+
+SET @result =0;
+CALL mCount(10, @result);
+SELECT @result;
+
+
+
+
+
+
+
+delimiter $$
+CREATE OR REPLACE FUNCTION mCount(bound INTEGER) RETURNS INTEGER
+BEGIN 
+	DECLARE cnt INTEGER DEFAULT 0;
+	DECLARE result INTEGER DEFAULT 0;
+	
+	test_loop : loop
+		SET cnt = cnt +1;
+		SET result = result + cnt;
+		if(cnt>=bound) then 
+			leave test_loop;
+		END if;
+	END loop;
+	RETURN result;
+END $$
+
+delimiter ;
+SET @r := mCount(10);
+SELECT @r;
+
+
+
+
+
+
+
+
+/*'name', products
+컬럼명과 테이블명, 분류코드를 인수로 받고
+products 테이블에서 해당 분류코드의 제품에 대하여
+컬럼 값과 가격이
+0~999
+1000~1999
+2000~2999
+3000~
+을 출력하는 프로시저를 작성하시오*/
+
+delimiter $$
+CREATE OR REPLACE PROCEDURE mpro
+(in col VARCHAR(200), IN tb VARCHAR(200), pcode INTEGER UNSIGNED)
+BEGIN
+	SET @q := CONCAT
+	('select ', col, 
+	', case floor(price/1000)
+			when 0 then \'1000\'
+			when 1 then \'1000\'
+			when 2 then \'1000\'
+			else \'3000\'
+			end 
+	 from ', tb, ' where part_id =?');
+	PREPARE stmt FROM @q;
+	SET @id := pcode;
+	EXECUTE stmt USING @id;
+END $$
+delimiter ;
+
+CALL mpro('name', 'products', 1);
+
+

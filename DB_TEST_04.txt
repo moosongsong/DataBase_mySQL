@@ -1,0 +1,100 @@
+1. 사원 테이블 (employees)에서 사원명과 급여액을 출력하는 SQL문을 작성하세요.
+정규직의 급여는 연봉 및 수당/12 이며 비상근직은 연봉 및 수당 X 근무시간입니다.
+정규직은 type_code 가 'RE'이며 비상근직은 'PA' 입니다.
+
+사원명	급여액
+
+SQL>
+SELECT em.emp_name '이름', 
+case 
+when em.type_code LIKE 'RE'
+then round(em.income/12)
+when em.type_code LIKE 'PA'
+then em.income*em.worktime
+END '급여'
+FROM employees em;
+
+
+
+2. 부서명과 사원이름을 출력하는 SQL문을 작성하세요. 부서명은 departs 테이블의 컬럼이며 사원이름은 employees 테이블의 컬럼입니다.
+
+부서명	사원이름
+
+SQL>
+SELECT de.dept_name AS '부서명', em.emp_name AS '사원이름'
+FROM departs de, employees em
+WHERE de.dept_code = em.dept_code;
+
+
+
+3. 부서별 총 급여액을 출력하는 SQL문을 작성하세요.
+
+부서명 	총 급여액
+
+SQL>
+SELECT 
+dept_name AS '부서', SUM(
+if(type_code = 'RE', FLOOR(income/12), (income*12))
+) AS total
+FROM employees join departs USING (dept_code)
+GROUP BY dept_code;
+
+
+
+
+4. 다음의 정보를 출력하는 SQL 문을 작성하세요.
+
+사원코드 	사원이름	사원직책명	근무부서명	상급자이름
+
+SQL>
+SELECT em.emp_code AS '사원코드',
+		em.emp_name AS '사원이름',
+		du.duties_name AS '사원직책명',
+		de.dept_name AS '근무부서명',
+		temp.emp_name AS '상급자이름'
+FROM employees em
+JOIN 
+departs de
+USING(dept_code)
+JOIN 
+duties du
+USING (duties_code)
+JOIN 
+employees temp 
+ON(em.senior_code = temp.emp_code);
+
+또는
+
+SELECT em.emp_code AS '사원코드',
+		em.emp_name AS '사원이름',
+		du.duties_name AS '사원직책명',
+		de.dept_name AS '근무부서명',
+		temp.emp_name AS '상급자이름'
+FROM employees em
+JOIN 
+departs de
+USING(dept_code)
+JOIN 
+duties du
+USING (duties_code)
+left JOIN 
+employees temp 
+ON(em.senior_code = temp.emp_code);
+
+
+
+5. 정규직 사원 중에서 정규직 전체 평균급여 이상의 급여를 수령하는 사원의 정보를 급여액 순(내림차순)으로 출력하는 SQL문을 작성하세요.
+
+직급명 	사원명	급여액
+
+SQL>
+SELECT du.duties_name AS '직급명', 
+		em.emp_name AS '사원명', 
+		round(em.income/12) AS '급여액'
+FROM employees em, duties du
+WHERE em.income >=
+(SELECT AVG(temp.income)
+FROM employees temp
+WHERE temp.type_code LIKE 'RE')
+AND du.duties_code = em.duties_code
+ORDER BY em.income DESC;
